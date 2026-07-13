@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aether | Secure Temporary Chat</title>
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .glass {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(139, 92, 246, 0.2);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(139, 92, 246, 0.4);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              950: '#030712',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen overflow-hidden flex flex-col">
+
+  <!-- ================= AUTH PAGES CONTAINER ================= -->
+  <div id="auth-container" class="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+    <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-violet-600/10 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-72 h-72 bg-pink-600/10 rounded-full blur-[100px] pointer-events-none animate-pulse delay-700"></div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-card" class="w-full max-w-md glass rounded-2xl p-8 shadow-2xl relative z-10">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">AETHER</h1>
+        <p class="text-xs text-slate-400 mt-2 font-medium tracking-wide uppercase">Secure Temporary Chat</p>
+      </div>
+      <div id="login-error" class="hidden mb-4 p-3 rounded-lg bg-red-950/40 border border-red-900/50 text-red-300 text-xs"></div>
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">Email Address</label>
+          <input type="email" id="login-email" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="you@example.com">
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block">Password</label>
+            <button type="button" onclick="showScreen('forgot')" class="text-[10px] font-medium text-violet-400 hover:underline">Forgot?</button>
+          </div>
+          <div class="relative">
+            <input type="password" id="login-password" required class="w-full px-4 py-2.5 pr-10 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="••••••••">
+            <button type="button" onclick="toggleLoginPassword()" class="absolute right-3 top-2 text-slate-500 hover:text-slate-300 cursor-pointer">
+              <i id="login-eye-icon" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" id="login-btn" class="w-full py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold rounded-lg text-xs shadow-lg hover:shadow-violet-900/30 transition-all cursor-pointer">Sign In</button>
+      </form>
+      <div class="text-center mt-6 text-xs text-slate-400">
+        New to Aether? <button onclick="showScreen('register')" class="font-semibold text-violet-400 hover:underline">Create account</button>
+      </div>
+    </div>
+
+    <!-- REGISTER SCREEN -->
+    <div id="register-card" class="w-full max-w-md glass rounded-2xl p-8 shadow-2xl relative z-10 hidden">
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">REGISTER</h1>
+        <p class="text-xs text-slate-400 mt-2 font-medium tracking-wide uppercase">Join Aether Workspace</p>
+      </div>
+      <div id="register-error" class="hidden mb-4 p-3 rounded-lg bg-red-950/40 border border-red-900/50 text-red-300 text-xs"></div>
+      <form onsubmit="handleRegister(event)" class="space-y-3">
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">Full Name</label>
+          <input type="text" id="reg-name" required class="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="Rahul Kumar">
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">Username</label>
+          <input type="text" id="reg-username" required class="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="rahul_k">
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">Email Address</label>
+          <input type="email" id="reg-email" required class="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="rahul@example.com">
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">Password</label>
+          <input type="password" id="reg-password" required class="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="••••••••">
+        </div>
+        <button type="submit" id="reg-btn" class="w-full py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold rounded-lg text-xs shadow-lg transition-all cursor-pointer">Register Account</button>
+      </form>
+      <div class="text-center mt-6 text-xs text-slate-400">
+        Already have an account? <button onclick="showScreen('login')" class="font-semibold text-violet-400 hover:underline">Sign In</button>
+      </div>
+    </div>
+
+    <!-- FORGOT SCREEN -->
+    <div id="forgot-card" class="w-full max-w-md glass rounded-2xl p-8 shadow-2xl relative z-10 hidden">
+      <div class="mb-4">
+        <button onclick="showScreen('login')" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 uppercase tracking-wider font-semibold"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back</button>
+      </div>
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">RECOVER</h1>
+        <p class="text-xs text-slate-400 mt-2 font-medium tracking-wide uppercase">Password Reset Flow</p>
+      </div>
+      <div id="forgot-error" class="hidden mb-4 p-3 rounded-lg bg-red-950/40 border border-red-900/50 text-red-300 text-xs"></div>
+      <div id="forgot-success" class="hidden mb-4 p-3 rounded-lg bg-emerald-950/40 border border-emerald-900/50 text-emerald-300 text-xs"></div>
+      
+      <!-- Step 1: Send Email -->
+      <form id="forgot-step1-form" onsubmit="handleRequestOtp(event)" class="space-y-4">
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">Your Email</label>
+          <input type="email" id="forgot-email" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="you@example.com">
+        </div>
+        <button type="submit" id="forgot-btn1" class="w-full py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold rounded-lg text-xs shadow-lg cursor-pointer">Send OTP</button>
+      </form>
+
+      <!-- Step 2: Input OTP & Reset (Hidden initially) -->
+      <form id="forgot-step2-form" onsubmit="handleResetPassword(event)" class="space-y-4 hidden">
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">6-Digit OTP Code</label>
+          <input type="text" id="forgot-otp" required maxLength="6" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200 text-center font-bold tracking-widest text-lg" placeholder="123456">
+          <span class="text-[9px] text-slate-500 mt-1 block">* Check server console for OTP code!</span>
+        </div>
+        <div>
+          <label class="text-[10px] font-semibold text-slate-350 uppercase tracking-wider block mb-1">New Password</label>
+          <input type="password" id="forgot-new-password" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-lg text-xs focus:outline-none focus:border-violet-500 text-slate-200" placeholder="••••••••">
+        </div>
+        <button type="submit" id="forgot-btn2" class="w-full py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold rounded-lg text-xs shadow-lg cursor-pointer">Confirm Reset</button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================= CHAT DASHBOARD WORKSPACE ================= -->
+  <div id="chat-container" class="flex-1 flex h-screen overflow-hidden hidden">
+    
+    <!-- SIDEBAR -->
+    <div class="w-80 h-full border-r border-slate-900 bg-slate-950 flex flex-col text-slate-200 select-none">
+      <!-- Profile Widget Header -->
+      <div class="p-4 border-b border-slate-900 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <img id="sb-profile-photo" src="" class="w-9 h-9 rounded-xl border border-slate-800 bg-slate-900 object-cover" alt="Me">
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-slate-950"></span>
+          </div>
+          <div class="overflow-hidden">
+            <h3 id="sb-profile-name" class="font-semibold text-xs truncate">Rahul Kumar</h3>
+            <p id="sb-profile-username" class="text-[10px] text-slate-500 truncate">@rahul_k</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-1">
+          <!-- Admin Panel Shortcut -->
+          <button id="sb-admin-badge" onclick="showScreen('admin')" class="hidden text-amber-500 hover:text-amber-400 p-1.5 rounded-lg hover:bg-slate-900 transition-all cursor-pointer" title="Admin Dashboard">
+            <i data-lucide="shield" class="w-4 h-4"></i>
+          </button>
+          <button onclick="openSettingsModal()" class="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-900 transition-all cursor-pointer" title="Settings">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+          </button>
+          <button onclick="handleLogout()" class="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-950/20 transition-all cursor-pointer" title="Log Out">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Friend search box -->
+      <div class="p-3">
+        <form onsubmit="handleSearchUsers(event)" class="relative">
+          <input type="text" id="sb-search-input" placeholder="Search username to add..." class="w-full bg-slate-900/60 border border-slate-800 rounded-lg py-1.5 pl-8 pr-4 text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-all">
+          <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500"></i>
+        </form>
+        <div id="sb-search-results" class="hidden mt-2 max-h-36 overflow-y-auto glass border border-slate-800 rounded-lg p-1.5 space-y-1.5"></div>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="flex border-b border-slate-900 px-2 gap-1 text-[11px] font-semibold">
+        <button onclick="switchTab('friends')" id="tab-btn-friends" class="flex-1 py-2.5 text-center border-b-2 border-violet-500 text-violet-400 flex items-center justify-center gap-1 cursor-pointer">
+          <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Chats
+        </button>
+        <button onclick="switchTab('groups')" id="tab-btn-groups" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1 cursor-pointer">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i> Groups
+        </button>
+        <button onclick="switchTab('requests')" id="tab-btn-requests" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1 cursor-pointer relative">
+          <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Requests
+          <span id="req-notification-dot" class="hidden absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping"></span>
+        </button>
+      </div>
+
+      <!-- Tab Lists -->
+      <div class="flex-1 overflow-y-auto p-2" id="sidebar-lists-container">
+        <!-- Friends List -->
+        <div id="list-friends" class="space-y-1"></div>
+        <!-- Groups List -->
+        <div id="list-groups" class="space-y-1 hidden"></div>
+        <!-- Requests List -->
+        <div id="list-requests" class="space-y-3 hidden"></div>
+      </div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="flex-1 h-full bg-slate-950 flex flex-col relative">
+      <!-- Empty Chat Placeholder -->
+      <div id="chat-empty-state" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center text-slate-500 p-8 z-10">
+        <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-violet-400 mb-3 animate-bounce">
+          <i data-lucide="sparkles" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-400">Your Secure Sandbox</h3>
+        <p class="text-[11px] text-center max-w-xs mt-1.5 leading-relaxed text-slate-500">
+          Click any active direct chat or room from the list to begin. Every message sent is temporary and automatically dissolves when the timer runs out.
+        </p>
+      </div>
+
+      <!-- Active Chat Header -->
+      <div class="p-4 border-b border-slate-900 bg-slate-950 flex items-center justify-between z-0">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 id="chat-header-title" class="font-semibold text-xs text-slate-100">Name</h3>
+            <span id="chat-header-e2ee-badge" class="hidden text-[8px] px-1 py-0.5 bg-violet-950/40 border border-violet-800/40 text-violet-400 font-bold rounded-full">E2EE</span>
+          </div>
+          <p id="chat-header-subtitle" class="text-[9px] text-slate-500 mt-0.5">Details</p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button onclick="handleRequestSummary()" id="chat-summary-btn" class="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-200 text-[10px] font-semibold rounded-lg flex items-center gap-1 transition-all cursor-pointer">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-violet-400"></i> AI Summary
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages Feed Container -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3.5"></div>
+
+      <!-- AI Smart Replies suggestions -->
+      <div id="ai-replies-bar" class="hidden px-4 py-2 flex flex-wrap gap-2 items-center bg-slate-950 border-t border-slate-900/40">
+        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3 text-violet-400"></i> Smart Reply:</span>
+        <div id="ai-replies-list" class="flex gap-2"></div>
+      </div>
+
+      <!-- Composer Bar -->
+      <div class="p-4 border-t border-slate-900 bg-slate-950">
+        <form onsubmit="handleSendMessage(event)" class="flex flex-col gap-2">
+          <!-- File selection visual preview -->
+          <div id="composer-file-preview" class="hidden flex items-center justify-between p-1.5 bg-slate-900 border border-slate-800 rounded-lg max-w-xs">
+            <div class="flex items-center gap-2 overflow-hidden">
+              <i data-lucide="paperclip" class="w-3 h-3 text-violet-400"></i>
+              <span id="composer-file-name" class="text-[10px] truncate font-semibold">file.pdf</span>
+            </div>
+            <button type="button" onclick="clearFileAttachment()" class="text-slate-500 hover:text-slate-300"><i data-lucide="x" class="w-3 h-3"></i></button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <input type="file" id="composer-file-input" onchange="handleFileSelected(event)" class="hidden">
+            <button type="button" onclick="document.getElementById('composer-file-input').click()" class="p-2 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-xl cursor-pointer" title="Attach file"><i data-lucide="paperclip" class="w-4 h-4"></i></button>
+            
+            <div class="flex-1 relative">
+              <input type="text" id="composer-text-input" oninput="handleTypingIndicator()" placeholder="Type a secure message..." class="w-full bg-slate-900 border border-slate-850 rounded-xl py-2.5 pl-4 pr-10 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all">
+              
+              <div class="absolute right-2 top-1.5">
+                <button type="button" onclick="toggleTimerMenu()" class="p-1 text-slate-500 hover:text-slate-350 flex items-center gap-0.5 rounded-lg" title="Timer"><i data-lucide="clock" class="w-4 h-4"></i></button>
+                
+                <!-- Timer selector list -->
+                <div id="composer-timer-menu" class="hidden absolute bottom-8 right-0 z-20 bg-slate-900 border border-slate-850 p-2 rounded-xl shadow-xl w-32 flex flex-col gap-1">
+                  <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1 px-1">Timer</p>
+                  <button type="button" onclick="setExpirationTimer(30)" class="text-[9px] font-semibold text-slate-300 hover:bg-slate-800 p-1 rounded-md text-left">30 seconds</button>
+                  <button type="button" onclick="setExpirationTimer(60)" class="text-[9px] font-semibold text-slate-300 hover:bg-slate-800 p-1 rounded-md text-left">1 minute</button>
+                  <button type="button" onclick="setExpirationTimer(300)" class="text-[9px] font-semibold text-slate-300 hover:bg-slate-800 p-1 rounded-md text-left font-bold text-violet-400">5 minutes</button>
+                  <button type="button" onclick="setExpirationTimer(3600)" class="text-[9px] font-semibold text-slate-300 hover:bg-slate-800 p-1 rounded-md text-left">1 hour</button>
+                  <button type="button" onclick="setExpirationTimer(86400)" class="text-[9px] font-semibold text-slate-300 hover:bg-slate-800 p-1 rounded-md text-left">24 hours</button>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="p-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-xl shadow-lg cursor-pointer"><i data-lucide="send" class="w-4 h-4"></i></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= MODERATION ADMIN INTERFACE ================= -->
+  <div id="admin-container" class="flex-1 p-6 overflow-y-auto hidden">
+    <div class="max-w-5xl mx-auto space-y-6">
+      <div class="flex items-center gap-3 border-b border-slate-900 pb-4">
+        <button onclick="showScreen('chat')" class="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+        <div>
+          <h1 class="text-lg font-bold flex items-center gap-2"><i data-lucide="shield" class="text-violet-400 w-5 h-5"></i> Admin Moderation</h1>
+          <p class="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">View reports and suspend user accounts</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="p-4 bg-slate-900/50 border border-slate-900 rounded-xl">
+          <span class="text-[8px] font-bold text-slate-500 uppercase">Total Users</span>
+          <p id="admin-stat-users" class="text-xl font-black mt-1">0</p>
+        </div>
+        <div class="p-4 bg-slate-900/50 border border-slate-900 rounded-xl">
+          <span class="text-[8px] font-bold text-slate-500 uppercase">Online Users</span>
+          <p id="admin-stat-online" class="text-xl font-black text-emerald-400 mt-1">0</p>
+        </div>
+        <div class="p-4 bg-slate-900/50 border border-slate-900 rounded-xl">
+          <span class="text-[8px] font-bold text-slate-500 uppercase">Group Rooms</span>
+          <p id="admin-stat-groups" class="text-xl font-black mt-1">0</p>
+        </div>
+        <div class="p-4 bg-slate-900/50 border border-slate-900 rounded-xl">
+          <span class="text-[8px] font-bold text-slate-500 uppercase">Total Reports</span>
+          <p id="admin-stat-reports" class="text-xl font-black text-pink-400 mt-1">0</p>
+        </div>
+      </div>
+
+      <!-- Reports List Table -->
+      <div class="bg-slate-900/40 border border-slate-900 rounded-xl">
+        <div class="p-4 border-b border-slate-900 font-bold text-xs uppercase tracking-wider text-slate-400">Reports queue</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-900 text-[10px] font-bold text-slate-500 uppercase">
+                <th class="p-3">Reporter</th>
+                <th class="p-3">Reported User</th>
+                <th class="p-3">Reason</th>
+                <th class="p-3">Transcript Evidence</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-reports-table-body" class="divide-y divide-slate-900"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-lg bg-slate-950 border border-slate-900 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-900 flex justify-between items-center bg-slate-950">
+        <h3 class="font-bold text-xs text-slate-100 flex items-center gap-1.5"><i data-lucide="settings" class="w-4 h-4 text-violet-400"></i> Settings & Privacy</h3>
+        <button onclick="closeSettingsModal()" class="text-slate-500 hover:text-slate-300"><i data-lucide="x" class="w-4.5 h-4.5"></i></button>
+      </div>
+      <form onsubmit="handleSaveSettings(event)" class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Display Name</label>
+            <input type="text" id="settings-name" required class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Profile Photo URL</label>
+            <input type="url" id="settings-photo" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Bio</label>
+          <textarea id="settings-bio" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none resize-none"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4 border-t border-slate-900 pt-3">
+          <div>
+            <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Last Seen</label>
+            <select id="settings-lastseen" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none">
+              <option value="ALL">Everyone</option>
+              <option value="FRIENDS">Friends Only</option>
+              <option value="NONE">Nobody</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Default Msg Timer</label>
+            <select id="settings-deftimer" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none">
+              <option value="30">30 seconds</option>
+              <option value="60">1 minute</option>
+              <option value="300">5 minutes</option>
+              <option value="3600">1 hour</option>
+              <option value="86400">24 hours</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-slate-900/40 border border-slate-900 rounded-xl">
+          <div>
+            <h5 class="text-xs font-semibold text-slate-200">Read Receipts</h5>
+            <p class="text-[9px] text-slate-500 mt-0.5">Show others when you have read messages.</p>
+          </div>
+          <input type="checkbox" id="settings-receipts" class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 bg-slate-900 border-slate-800 cursor-pointer">
+        </div>
+        <div class="p-3 bg-violet-950/20 border border-violet-900/30 rounded-xl">
+          <h5 class="text-xs font-semibold text-violet-300 flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5"></i> E2EE Safety Number</h5>
+          <p id="settings-safety-number" class="text-[10px] font-mono font-bold text-violet-400 tracking-wider text-center mt-2">000-000-000</p>
+        </div>
+        <div class="flex justify-end gap-2 border-t border-slate-900 pt-4">
+          <button type="button" onclick="closeSettingsModal()" class="px-4 py-2 border border-slate-850 text-slate-400 hover:text-slate-200 text-xs font-semibold rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-xs font-semibold rounded-lg">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- GROUP CREATION MODAL -->
+  <div id="group-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-sm bg-slate-950 border border-slate-900 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-900 flex justify-between items-center bg-slate-950">
+        <h3 class="font-bold text-xs text-slate-100 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-violet-400"></i> Create Group Chat</h3>
+        <button onclick="closeGroupModal()" class="text-slate-500 hover:text-slate-350"><i data-lucide="x" class="w-4.5 h-4.5"></i></button>
+      </div>
+      <form onsubmit="handleCreateGroup(event)" class="p-5 space-y-4">
+        <div>
+          <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Group Name *</label>
+          <input type="text" id="group-name" required class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none" placeholder="e.g. Project Space">
+        </div>
+        <div>
+          <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Description</label>
+          <textarea id="group-desc" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none resize-none" placeholder="Brief details..."></textarea>
+        </div>
+        <div>
+          <label class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Select Members</label>
+          <div id="group-members-list" class="mt-1 border border-slate-900 bg-slate-900/20 max-h-32 overflow-y-auto rounded-lg p-2 divide-y divide-slate-900"></div>
+        </div>
+        <div class="flex justify-end gap-2 border-t border-slate-900 pt-4">
+          <button type="button" onclick="closeGroupModal()" class="px-4 py-2 border border-slate-850 text-slate-400 hover:text-slate-200 text-xs font-semibold rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-xs font-semibold rounded-lg">Create Group</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- AI SUMMARY POPUP DRAWER -->
+  <div id="summary-drawer" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-end hidden">
+    <div class="w-80 h-full bg-slate-950 border-l border-slate-900 p-6 flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-900 pb-3 mb-4">
+        <h3 class="font-bold text-xs text-slate-200 flex items-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-violet-400 animate-pulse"></i> AI Chat Summary</h3>
+        <button onclick="toggleSummaryDrawer(false)" class="text-slate-500 hover:text-slate-350"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div id="summary-content" class="flex-1 overflow-y-auto text-xs leading-relaxed text-slate-300 whitespace-pre-wrap bg-slate-900/40 border border-slate-900 p-4 rounded-xl"></div>
+      <p class="text-[9px] text-slate-600 mt-4 leading-relaxed">* Summaries are generated using Gemini. If E2EE is active, messages are decrypted locally before requesting summaries.</p>
+    </div>
+  </div>
+
+
+  <!-- ================= CLIENT JAVASCRIPT ================= -->
+  <script>
+    // State management variables
+    let user = null;
+    let friendsData = { friends: [], pendingSent: [], pendingReceived: [], blocked: [] };
+    let groupsList = [];
+    
+    let activeRoomId = null;
+    let activeRoomType = null;
+    let activeRoomData = null;
+    let messages = [];
+    
+    let activeTab = 'friends';
+    let expirationTimer = 300; // 5 minutes default
+    
+    let selectedFile = null;
+    let sseSource = null;
+    let typingTimeout = null;
+
+    // Cryptography local states
+    let myPrivateKey = null;
+    let myPublicKeyJwk = null;
+
+    // IndexedDB wrapper for E2EE keys
+    const DB_NAME = 'AntigravityOfflineChatE2EE';
+    const STORE_NAME = 'private_keys';
+    
+    const openDB = () => {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => e.target.result.createObjectStore(STORE_NAME);
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => reject(req.error);
+      });
+    };
+
+    const getPrivateKey = async (userId) => {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).get(userId);
+        req.onsuccess = () => resolve(req.result || null);
+      });
+    };
+
+    const savePrivateKey = async (userId, keyJwk) => {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const req = tx.objectStore(STORE_NAME).put(keyJwk, userId);
+        req.onsuccess = () => resolve();
+      });
+    };
+
+    // Web Crypto E2EE helpers
+    const generateKeys = async () => {
+      return await window.crypto.subtle.generateKey(
+        { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+        true, ['encrypt', 'decrypt']
+      );
+    };
+
+    const exportKeyJwk = async (key) => {
+      return JSON.stringify(await window.crypto.subtle.exportKey('jwk', key));
+    };
+
+    const importKeyJwk = async (jwkStr, isPrivate) => {
+      const jwk = JSON.parse(jwkStr);
+      return await window.crypto.subtle.importKey(
+        'jwk', jwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, isPrivate ? ['decrypt'] : ['encrypt']
+      );
+    };
+
+    const arrayBufferToBase64 = (buf) => {
+      return btoa(String.fromCharCode(...new Uint8Array(buf)));
+    };
+
+    const base64ToArrayBuffer = (b64) => {
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return bytes.buffer;
+    };
+
+    const encryptText = async (text, recipientPubJwk, senderPub) => {
+      const aesKey = await window.crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+      const encVal = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, new TextEncoder().encode(text));
+      
+      const rawAes = await window.crypto.subtle.exportKey('raw', aesKey);
+      
+      const encKeyRecipient = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, await importKeyJwk(recipientPubJwk, false), rawAes);
+      const encKeySender = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, senderPub, rawAes);
+
+      return {
+        content: arrayBufferToBase64(encVal),
+        iv: arrayBufferToBase64(iv),
+        keys: {
+          recipient: arrayBufferToBase64(encKeyRecipient),
+          sender: arrayBufferToBase64(encKeySender)
+        }
+      };
+    };
+
+    const decryptText = async (encContent, ivB64, encKeyB64, myPrivKey) => {
+      const rawAes = await window.crypto.subtle.decrypt({ name: 'RSA-OAEP' }, myPrivKey, base64ToArrayBuffer(encKeyB64));
+      const aesKey = await window.crypto.subtle.importKey('raw', rawAes, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+      const decrypted = await window.crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: new Uint8Array(base64ToArrayBuffer(ivB64)) },
+        aesKey, base64ToArrayBuffer(encContent)
+      );
+      return new TextDecoder().decode(decrypted);
+    };
+
+    // Helper: format headers
+    const authHeaders = () => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+    });
+
+    // Handle screen display toggling
+    const showScreen = (screen) => {
+      const cards = ['login-card', 'register-card', 'forgot-card'];
+      const containers = ['auth-container', 'chat-container', 'admin-container'];
+      
+      containers.forEach(c => document.getElementById(c).classList.add('hidden'));
+      cards.forEach(c => document.getElementById(c).classList.add('hidden'));
+
+      if (screen === 'login' || screen === 'register' || screen === 'forgot') {
+        document.getElementById('auth-container').classList.remove('hidden');
+        document.getElementById(screen + '-card').classList.remove('hidden');
+      } else {
+        document.getElementById(screen + '-container').classList.remove('hidden');
+      }
+      lucide.createIcons();
+    };
+
+    // Initial check
+    window.onload = async () => {
+      lucide.createIcons();
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        try {
+          const res = await fetch('/api/users/profile', { headers: authHeaders() });
+          if (res.ok) {
+            user = await res.json();
+            await recoverE2EEKeys();
+            showScreen('chat');
+            setupSSE();
+            loadSidebarData();
+          } else {
+            handleLogout();
+          }
+        } catch (e) {
+          handleLogout();
+        }
+      } else {
+        showScreen('login');
+      }
+    };
+
+    const recoverE2EEKeys = async () => {
+      try {
+        const savedPrivJwk = await getPrivateKey(user.id);
+        if (savedPrivJwk) {
+          myPrivateKey = await importKeyJwk(savedPrivJwk, true);
+          myPublicKeyJwk = user.publicKey;
+        } else {
+          console.log('Generating E2EE keys...');
+          const kp = await generateKeys();
+          const pubJwk = await exportKeyJwk(kp.publicKey);
+          const privJwk = await exportPrivateKey(kp.privateKey);
+          
+          await savePrivateKey(user.id, privJwk);
+          
+          await fetch('/api/users/profile', {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ publicKey: pubJwk })
+          });
+          
+          myPrivateKey = kp.privateKey;
+          myPublicKeyJwk = pubJwk;
+        }
+      } catch (err) {
+        console.error('Failed to init E2EE:', err);
+      }
+    };
+
+    // Sign in
+    const handleLogin = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      
+      const errorDiv = document.getElementById('login-error');
+      errorDiv.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('userId', data.user.id);
+          user = data.user;
+          await recoverE2EEKeys();
+          showScreen('chat');
+          setupSSE();
+          loadSidebarData();
+        } else {
+          errorDiv.textContent = data.error;
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Server connection failed.';
+        errorDiv.classList.remove('hidden');
+      }
+    };
+
+    // Sign up
+    const handleRegister = async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const username = document.getElementById('reg-username').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      
+      const errorDiv = document.getElementById('register-error');
+      errorDiv.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, username, email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Registered successfully! Please sign in.');
+          showScreen('login');
+        } else {
+          errorDiv.textContent = data.error;
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Registration failed.';
+        errorDiv.classList.remove('hidden');
+      }
+    };
+
+    // Forgot Password Flow
+    const handleRequestOtp = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value;
+      const err = document.getElementById('forgot-error');
+      const succ = document.getElementById('forgot-success');
+      err.classList.add('hidden');
+      succ.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        if (res.ok) {
+          succ.textContent = 'OTP sent! Please check server console and enter the code below.';
+          succ.classList.remove('hidden');
+          document.getElementById('forgot-step1-form').classList.add('hidden');
+          document.getElementById('forgot-step2-form').classList.remove('hidden');
+        } else {
+          const data = await res.json();
+          err.textContent = data.error;
+          err.classList.remove('hidden');
+        }
+      } catch (e) {
+        err.textContent = 'Connection failed.';
+        err.classList.remove('hidden');
+      }
+    };
+
+    const handleResetPassword = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value;
+      const otp = document.getElementById('forgot-otp').value;
+      const newPassword = document.getElementById('forgot-new-password').value;
+      
+      const err = document.getElementById('forgot-error');
+      const succ = document.getElementById('forgot-success');
+      err.classList.add('hidden');
+      succ.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp, newPassword })
+        });
+        if (res.ok) {
+          succ.textContent = 'Password reset successful! Redirecting to login...';
+          succ.classList.remove('hidden');
+          setTimeout(() => {
+            showScreen('login');
+            // reset forgot forms
+            document.getElementById('forgot-step1-form').classList.remove('hidden');
+            document.getElementById('forgot-step2-form').classList.add('hidden');
+            document.getElementById('forgot-otp').value = '';
+            document.getElementById('forgot-new-password').value = '';
+          }, 2000);
+        } else {
+          const data = await res.json();
+          err.textContent = data.error;
+          err.classList.remove('hidden');
+        }
+      } catch (e) {
+        err.textContent = 'Reset failed.';
+        err.classList.remove('hidden');
+      }
+    };
+
+    // Logout
+    const handleLogout = () => {
+      if (sseSource) sseSource.close();
+      localStorage.clear();
+      user = null;
+      myPrivateKey = null;
+      myPublicKeyJwk = null;
+      showScreen('login');
+    };
+
+    // SSE connection for real-time pushing
+    const setupSSE = () => {
+      if (sseSource) sseSource.close();
+      
+      const userId = localStorage.getItem('userId');
+      sseSource = new EventSource(`/api/events?userId=${userId}`);
+
+      sseSource.onmessage = async (event) => {
+        const data = JSON.parse(event.data);
+        console.log('SSE Event received:', data);
+
+        if (data.type === 'new_message') {
+          const msg = data.message;
+          if (activeRoomId && msg.roomId === activeRoomId) {
+            const dec = await decryptMessagePayload(msg);
+            messages.push(dec);
+            renderMessages();
+          }
+        } else if (data.type === 'message_expired') {
+          const { messageId, roomId } = data;
+          if (activeRoomId && roomId === activeRoomId) {
+            messages = messages.filter(m => m.id !== messageId);
+            renderMessages();
+          }
+        } else if (data.type === 'typing_update') {
+          const { roomId, username, isTyping } = data;
+          if (activeRoomId && roomId === activeRoomId) {
+            const subt = document.getElementById('chat-header-subtitle');
+            if (isTyping) {
+              subt.innerHTML = `<span class="text-violet-400 font-bold animate-pulse">@${username} is typing...</span>`;
+            } else {
+              subt.textContent = activeRoomType === 'DIRECT' ? `@${activeRoomData.friend.username}` : 'Group chat';
+            }
+          }
+        } else if (data.type === 'user_status_update') {
+          // Refresh lists to display online status indicator changes
+          loadSidebarData();
+        }
+      };
+
+      sseSource.onerror = () => {
+        console.error('SSE Connection broken, reconnecting...');
+      };
+    };
+
+    // Load sidebar data (Friends list, requests)
+    const loadSidebarData = async () => {
+      try {
+        const friendRes = await fetch('/friends', { headers: authHeaders() });
+        friendsData = await friendRes.json();
+        
+        const groupRes = await fetch('/groups', { headers: authHeaders() });
+        groupsList = await groupRes.json();
+
+        // Render header details
+        document.getElementById('sb-profile-photo').src = user.profilePhoto || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+        document.getElementById('sb-profile-name').textContent = user.name;
+        document.getElementById('sb-profile-username').textContent = `@${user.username}`;
+        
+        if (user.isAdmin) {
+          document.getElementById('sb-admin-badge').classList.remove('hidden');
+        } else {
+          document.getElementById('sb-admin-badge').classList.add('hidden');
+        }
+
+        renderSidebarLists();
+      } catch (e) {
+        console.error('Failed to load sidebar content:', e);
+      }
+    };
+
+    // Switch active tabs (Friends/Groups/Requests)
+    const switchTab = (tab) => {
+      activeTab = tab;
+      
+      const tabs = ['friends', 'groups', 'requests'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const list = document.getElementById(`list-${t}`);
+        
+        if (t === tab) {
+          btn.classList.add('border-violet-500', 'text-violet-400');
+          btn.classList.remove('border-transparent', 'text-slate-400');
+          list.classList.remove('hidden');
+        } else {
+          btn.classList.remove('border-violet-500', 'text-violet-400');
+          btn.classList.add('border-transparent', 'text-slate-400');
+          list.classList.add('hidden');
+        }
+      });
+    };
+
+    // Render lists in sidebar
+    const renderSidebarLists = () => {
+      // 1. Friends list
+      const friendsListDiv = document.getElementById('list-friends');
+      friendsListDiv.innerHTML = '';
+      if (friendsData.friends.length === 0) {
+        friendsListDiv.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">No chats.</p>';
+      } else {
+        friendsData.friends.forEach(f => {
+          const dmRoomId = `dm_${[user.id, f.friend.id].sort().join('_')}`;
+          const isSelected = activeRoomId === dmRoomId;
+          const indicator = f.friend.isOnline ? 'bg-emerald-500' : 'bg-slate-600';
+          
+          friendsListDiv.innerHTML += `
+            <div onclick="selectRoom('${dmRoomId}', 'DIRECT', ${JSON.stringify(f).replace(/"/g, '&quot;')})" 
+                 class="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all ${
+                   isSelected ? 'bg-slate-900 border border-slate-800' : 'hover:bg-slate-900/40 border border-transparent'
+                 }">
+              <div class="relative">
+                <img src="${f.friend.profilePhoto || `https://api.dicebear.com/7.x/bottts/svg?seed=${f.friend.username}`}" class="w-9 h-9 rounded-xl object-cover bg-slate-800">
+                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-slate-950 ${indicator}"></span>
+              </div>
+              <div class="flex-1 overflow-hidden">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-semibold truncate text-slate-200">${f.friend.name}</p>
+                  ${f.friend.publicKey ? '<span class="text-[8px] px-1 bg-slate-900 border border-slate-800 text-violet-400 font-bold rounded">E2EE</span>' : ''}
+                </div>
+                <p class="text-[9px] text-slate-500 truncate mt-0.5">@${f.friend.username}</p>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // 2. Groups list
+      const groupsListDiv = document.getElementById('list-groups');
+      groupsListDiv.innerHTML = '';
+      if (groupsList.length === 0) {
+        groupsListDiv.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">No groups joined.</p>';
+      } else {
+        groupsList.forEach(g => {
+          const groupRoomId = `group_${g.id}`;
+          const isSelected = activeRoomId === groupRoomId;
+          
+          groupsListDiv.innerHTML += `
+            <div onclick="selectRoom('${groupRoomId}', 'GROUP', ${JSON.stringify(g).replace(/"/g, '&quot;')})" 
+                 class="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all ${
+                   isSelected ? 'bg-slate-900 border border-slate-800' : 'hover:bg-slate-900/40 border border-transparent'
+                 }">
+              <img src="${g.groupImage || `https://api.dicebear.com/7.x/identicon/svg?seed=${g.name}`}" class="w-9 h-9 rounded-xl object-cover bg-slate-800">
+              <div class="flex-1 overflow-hidden">
+                <h4 class="text-xs font-semibold truncate text-slate-200">${g.name}</h4>
+                <p class="text-[9px] text-slate-500 truncate mt-0.5">${g.members.length} members</p>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // 3. Requests list
+      const reqListDiv = document.getElementById('list-requests');
+      reqListDiv.innerHTML = '';
+      
+      const dot = document.getElementById('req-notification-dot');
+      if (friendsData.pendingReceived.length > 0) dot.classList.remove('hidden');
+      else dot.classList.add('hidden');
+
+      if (friendsData.pendingReceived.length === 0 && friendsData.pendingSent.length === 0) {
+        reqListDiv.innerHTML = '<p class="text-xs text-slate-600 text-center py-4">No requests.</p>';
+      } else {
+        // Received
+        if (friendsData.pendingReceived.length > 0) {
+          reqListDiv.innerHTML += '<p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-1">Received</p>';
+          friendsData.pendingReceived.forEach(r => {
+            reqListDiv.innerHTML += `
+              <div class="flex items-center justify-between p-2 bg-slate-900/30 border border-slate-900 rounded-xl gap-2">
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <img src="${r.user.profilePhoto || `https://api.dicebear.com/7.x/bottts/svg?seed=${r.user.username}`}" class="w-7 h-7 rounded-lg object-cover bg-slate-800">
+                  <div class="truncate">
+                    <p class="text-xs font-semibold truncate">${r.user.name}</p>
+                    <p class="text-[9px] text-slate-500 truncate">@${r.user.username}</p>
+                  </div>
+                </div>
+                <div class="flex gap-1 shrink-0">
+                  <button onclick="handleAcceptRequest('${r.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white p-1 rounded-md cursor-pointer"><i data-lucide="check" class="w-3.5 h-3.5"></i></button>
+                  <button onclick="handleRejectRequest('${r.id}')" class="bg-red-600 hover:bg-red-500 text-white p-1 rounded-md cursor-pointer"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                </div>
+              </div>
+            `;
+          });
+        }
+        // Sent
+        if (friendsData.pendingSent.length > 0) {
+          reqListDiv.innerHTML += '<p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-3 mb-1 px-1">Sent</p>';
+          friendsData.pendingSent.forEach(r => {
+            reqListDiv.innerHTML += `
+              <div class="flex items-center justify-between p-2 bg-slate-900/30 border border-slate-900 rounded-xl gap-2">
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <img src="${r.user.profilePhoto || `https://api.dicebear.com/7.x/bottts/svg?seed=${r.user.username}`}" class="w-7 h-7 rounded-lg object-cover bg-slate-800">
+                  <div class="truncate text-left">
+                    <p class="text-xs font-semibold truncate">${r.user.name}</p>
+                    <p class="text-[9px] text-slate-500 truncate">@${r.user.username}</p>
+                  </div>
+                </div>
+                <span class="text-[9px] px-1.5 py-0.5 bg-slate-900 border border-slate-800 text-slate-400 rounded">Pending</span>
+              </div>
+            `;
+          });
+        }
+      }
+      lucide.createIcons();
+    };
+
+    // User Search and Friend Request Add Actions
+    const handleSearchUsers = async (e) => {
+      e.preventDefault();
+      const q = document.getElementById('sb-search-input').value.trim();
+      const resPanel = document.getElementById('sb-search-results');
+      if (!q) return;
+      resPanel.innerHTML = '<p class="text-[10px] text-slate-500">Searching...</p>';
+      resPanel.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/users/search?query=${q}`, { headers: authHeaders() });
+        const users = await res.json();
+        resPanel.innerHTML = '';
+        if (users.length === 0) {
+          resPanel.innerHTML = '<p class="text-[10px] text-slate-500 p-1">No users found.</p>';
+        } else {
+          users.forEach(u => {
+            resPanel.innerHTML += `
+              <div class="flex items-center justify-between gap-2 p-1 hover:bg-slate-900 rounded-md">
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <img src="${u.profilePhoto || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`}" class="w-6 h-6 rounded-md object-cover bg-slate-800">
+                  <div class="truncate text-left">
+                    <p class="text-xs font-semibold truncate">${u.name}</p>
+                    <p class="text-[9px] text-slate-500 truncate">@${u.username}</p>
+                  </div>
+                </div>
+                <button onclick="handleSendRequest('${u.id}')" class="bg-violet-600 hover:bg-violet-500 text-white p-1 rounded-md cursor-pointer"><i data-lucide="user-plus" class="w-3 h-3"></i></button>
+              </div>
+            `;
+          });
+        }
+        lucide.createIcons();
+      } catch (err) {
+        resPanel.innerHTML = '<p class="text-[10px] text-red-400">Search failed.</p>';
+      }
+    };
+
+    const handleSendRequest = async (receiverId) => {
+      try {
+        const res = await fetch('/friends/request', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ receiverId })
+        });
+        if (res.ok) {
+          alert('Request sent!');
+          document.getElementById('sb-search-input').value = '';
+          document.getElementById('sb-search-results').classList.add('hidden');
+          loadSidebarData();
+        } else {
+          const d = await res.json();
+          alert(d.error);
+        }
+      } catch (e) {
+        alert('Action failed.');
+      }
+    };
+
+    const handleAcceptRequest = async (requestId) => {
+      await fetch('/friends/accept', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ requestId })
+      });
+      loadSidebarData();
+    };
+
+    const handleRejectRequest = async (requestId) => {
+      await fetch('/friends/reject', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ requestId })
+      });
+      loadSidebarData();
+    };
+
+    // Selecting a chat room
+    const selectRoom = async (roomId, type, roomData) => {
+      activeRoomId = roomId;
+      activeRoomType = type;
+      activeRoomData = roomData;
+      
+      document.getElementById('chat-empty-state').classList.add('hidden');
+      
+      // Update Header details
+      const title = type === 'DIRECT' ? roomData.friend.name : roomData.name;
+      const subtitle = type === 'DIRECT' ? `@${roomData.friend.username}` : 'Group room';
+      document.getElementById('chat-header-title').textContent = title;
+      document.getElementById('chat-header-subtitle').textContent = subtitle;
+      
+      const e2eeBadge = document.getElementById('chat-header-e2ee-badge');
+      if (type === 'DIRECT' && roomData.friend.publicKey) {
+        e2eeBadge.classList.remove('hidden');
+      } else {
+        e2eeBadge.classList.add('hidden');
+      }
+
+      // Fetch message transcripts
+      try {
+        const res = await fetch(`/messages/${roomId}`, { headers: authHeaders() });
+        const rawMsgs = await res.json();
+        
+        // Decrypt transcripts in parallel
+        messages = [];
+        for (const m of rawMsgs) {
+          messages.push(await decryptMessagePayload(m));
+        }
+
+        renderMessages();
+        loadSmartReplies();
+        renderSidebarLists(); // Re-render to highlight active item
+      } catch (e) {
+        console.error('Failed to load room messages:', e);
+      }
+    };
+
+    const decryptMessagePayload = async (msg) => {
+      if (!msg.isEncrypted || !msg.encryptedContent || !msg.iv || !msg.encryptedKeys || !myPrivateKey) {
+        return { ...msg, decryptedContent: msg.encryptedContent || '' };
+      }
+
+      const keyForMe = msg.encryptedKeys[user.id] || msg.encryptedKeys['recipient'] || msg.encryptedKeys['sender']; // fallback key maps
+      if (!keyForMe) {
+        return { ...msg, decryptedContent: '[Encrypted - Key unavailable]' };
+      }
+
+      try {
+        const decrypted = await decryptText(msg.encryptedContent, msg.iv, keyForMe, myPrivateKey);
+        return { ...msg, decryptedContent: decrypted };
+      } catch (err) {
+        return { ...msg, decryptedContent: '[Decryption failed]' };
+      }
+    };
+
+    // Render Messages list
+    const renderMessages = () => {
+      const chatFeed = document.getElementById('chat-messages');
+      chatFeed.innerHTML = '';
+
+      messages.forEach(msg => {
+        const isMe = msg.senderId === user.id;
+        const remainingSecs = Math.max(0, Math.floor((msg.expiresAt - Date.now()) / 1000));
+        
+        const formatTime = (secs) => {
+          if (secs < 60) return `${secs}s`;
+          const mins = Math.floor(secs / 60);
+          return `${mins}m`;
+        };
+
+        const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const name = isMe ? 'You' : (activeRoomType === 'DIRECT' ? activeRoomData.friend.name : 'Participant');
+        
+        let fileBlock = '';
+        if (msg.fileUrl) {
+          fileBlock = `
+            <div class="mb-2 p-2 bg-black/20 border border-white/5 rounded-lg flex items-center gap-2 max-w-xs">
+              <i data-lucide="file-text" class="w-5 h-5 text-slate-300"></i>
+              <div class="overflow-hidden flex-1">
+                <a href="${msg.fileUrl}" target="_blank" class="text-xs font-semibold underline truncate block hover:text-violet-200">${msg.fileName}</a>
+                <span class="text-[9px] text-slate-400 mt-0.5 block">${Math.round((msg.fileSize || 0) / 1024)} KB</span>
+              </div>
+            </div>
+          `;
+        }
+
+        const translateBtn = (msg.decryptedContent && !msg.fileUrl) 
+          ? `<button onclick="handleTranslateClick(event, '${msg.id}', '${msg.decryptedContent.replace(/'/g, "\\'")}')" class="p-1 bg-slate-900 border border-slate-800 text-slate-500 hover:text-slate-200 rounded-md cursor-pointer ml-2 mt-1"><i data-lucide="languages" class="w-3 h-3"></i></button>`
+          : '';
+
+        chatFeed.innerHTML += `
+          <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+            <div class="flex items-center gap-1 text-[9px] text-slate-500 mb-0.5 px-1">
+              <span class="font-semibold">${name}</span>
+              <span>•</span>
+              <span>${timeStr}</span>
+            </div>
+            <div class="flex items-end gap-2 max-w-[80%] relative group">
+              ${isMe ? `<div class="flex items-center gap-1 text-[9px] text-slate-500 bg-slate-900/50 px-1.5 py-0.5 rounded-full"><i data-lucide="clock" class="w-2.5 h-2.5"></i> ${formatTime(remainingSecs)}</div>` : ''}
+              
+              <div class="p-3 rounded-2xl shadow-md ${
+                isMe 
+                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-br-none' 
+                  : 'bg-slate-900 border border-slate-850 text-slate-200 rounded-bl-none'
+              }">
+                ${fileBlock}
+                ${msg.decryptedContent ? `<p class="text-xs leading-relaxed whitespace-pre-wrap">${msg.decryptedContent}</p>` : ''}
+              </div>
+
+              ${!isMe ? `<div class="flex items-center gap-1 text-[9px] text-slate-500 bg-slate-900/50 px-1.5 py-0.5 rounded-full"><i data-lucide="clock" class="w-2.5 h-2.5"></i> ${formatTime(remainingSecs)}</div>` : ''}
+              ${translateBtn}
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+      // Scroll to bottom
+      chatFeed.scrollTop = chatFeed.scrollHeight;
+    };
+
+    // Live Expiration Timer update
+    setInterval(() => {
+      if (messages.length > 0) {
+        renderMessages();
+      }
+    }, 1000);
+
+    // Composer Timer actions
+    const toggleTimerMenu = () => {
+      const menu = document.getElementById('composer-timer-menu');
+      menu.classList.toggle('hidden');
+    };
+
+    const setExpirationTimer = (val) => {
+      expirationTimer = val;
+      toggleTimerMenu();
+      alert(`Message timer set to ${val} seconds!`);
+    };
+
+    // File selected handling (base64 conversion)
+    const handleFileSelected = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        selectedFile = e.target.files[0];
+        document.getElementById('composer-file-name').textContent = selectedFile.name;
+        document.getElementById('composer-file-preview').classList.remove('hidden');
+      }
+    };
+
+    const clearFileAttachment = () => {
+      selectedFile = null;
+      document.getElementById('composer-file-input').value = '';
+      document.getElementById('composer-file-preview').classList.add('hidden');
+    };
+
+    // Handle sending message
+    const handleSendMessage = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('composer-text-input');
+      const text = input.value.trim();
+      
+      if (!text && !selectedFile) return;
+
+      let fileBase64 = null;
+      let fileInfo = {};
+      
+      if (selectedFile) {
+        fileInfo = {
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          fileMime: selectedFile.type
+        };
+        // Convert to base64
+        fileBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(selectedFile);
+        });
+      }
+
+      // Check encryption capability (DIRECT chat E2EE)
+      let payload = {
+        receiverId: activeRoomType === 'DIRECT' ? activeRoomData.friend.id : activeRoomData.id,
+        chatType: activeRoomType,
+        duration: expirationTimer,
+        isEncrypted: false,
+        encryptedContent: text,
+        fileBase64,
+        ...fileInfo
+      };
+
+      if (activeRoomType === 'DIRECT' && activeRoomData.friend.publicKey && text) {
+        try {
+          const enc = await encryptText(text, activeRoomData.friend.publicKey, await importKeyJwk(myPublicKeyJwk, false));
+          payload.isEncrypted = true;
+          payload.encryptedContent = enc.content;
+          payload.iv = enc.iv;
+          payload.encryptedKeys = {
+            [activeRoomData.friend.id]: enc.keys.recipient,
+            [user.id]: enc.keys.sender
+          };
+        } catch (err) {
+          console.error('Encryption failed, sending as plain text fallback:', err);
+        }
+      }
+
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const msg = await res.json();
+        
+        const dec = await decryptMessagePayload(msg);
+        messages.push(dec);
+        renderMessages();
+        
+        input.value = '';
+        clearFileAttachment();
+      } catch (err) {
+        console.error('Failed to send message:', err);
+      }
+    };
+
+    // Typing heartbeat emit
+    const handleTypingIndicator = () => {
+      if (typingTimeout) clearTimeout(typingTimeout);
+      
+      const socket = getSocket(); // Wait, in SSE we don't have socket.emit, instead we POST to a typing endpoint!
+      fetch('/api/typing', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ roomId: activeRoomId, isTyping: true })
+      });
+
+      typingTimeout = setTimeout(() => {
+        fetch('/api/typing', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ roomId: activeRoomId, isTyping: false })
+        });
+      }, 3000);
+    };
+
+    // AI Features Front end
+    const handleRequestSummary = async () => {
+      const modal = document.getElementById('summary-drawer');
+      const content = document.getElementById('summary-content');
+      modal.classList.remove('hidden');
+      content.innerHTML = '<div class="flex items-center gap-2 text-slate-500"><i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Summarizing...</div>';
+      lucide.createIcons();
+
+      try {
+        const mapped = messages
+          .filter(m => m.decryptedContent && !m.fileUrl)
+          .map(m => ({
+            senderName: m.senderId === user.id ? 'Sender' : 'Receiver',
+            content: m.decryptedContent
+          }));
+
+        const res = await fetch('/api/ai/summarize', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ messages: mapped })
+        });
+        const data = await res.json();
+        content.innerHTML = data.summary;
+      } catch (e) {
+        content.textContent = 'Failed to generate AI summary.';
+      }
+    };
+
+    const toggleSummaryDrawer = (show) => {
+      const modal = document.getElementById('summary-drawer');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    };
+
+    const loadSmartReplies = async () => {
+      const repliesBar = document.getElementById('ai-replies-bar');
+      const repliesList = document.getElementById('ai-replies-list');
+      repliesBar.classList.add('hidden');
+
+      const textMsgs = messages.filter(m => m.decryptedContent && !m.fileUrl);
+      if (textMsgs.length === 0) return;
+
+      try {
+        const recent = textMsgs.slice(-4).map(m => ({
+          senderName: m.senderId === user.id ? 'Sender' : 'Receiver',
+          content: m.decryptedContent
+        }));
+
+        const res = await fetch('/api/ai/suggest-replies', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ messages: recent })
+        });
+        const data = await res.json();
+        
+        repliesList.innerHTML = '';
+        if (data.suggestions && data.suggestions.length > 0) {
+          data.suggestions.forEach(text => {
+            repliesList.innerHTML += `
+              <button onclick="handleSuggestionClick('${text.replace(/'/g, "\\'")}')" class="text-[10px] font-semibold px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-lg cursor-pointer transition-colors">
+                ${text}
+              </button>
+            `;
+          });
+          repliesBar.classList.remove('hidden');
+        }
+      } catch (e) {
+        console.error('Failed to load smart replies:', e);
+      }
+    };
+
+    const handleTranslateClick = async (event, msgId, content) => {
+      event.stopPropagation();
+      const targetLang = prompt('Enter target language (e.g. Spanish, French, Japanese):', 'Spanish');
+      if (!targetLang) return;
+
+      try {
+        const res = await fetch('/api/ai/translate', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ text: content, targetLanguage: targetLang })
+        });
+        const data = await res.json();
+        
+        // Cache translation in state
+        messages = messages.map(m => {
+          if (m.id === msgId) {
+            return { ...m, decryptedContent: `${m.decryptedContent}\n\n[Translated to ${targetLang}]: ${data.translatedText}` };
+          }
+          return m;
+        });
+        renderMessages();
+      } catch (e) {
+        alert('Translation failed.');
+      }
+    };
+
+    // MODALS ACTIONS
+    const openSettingsModal = () => {
+      document.getElementById('settings-name').value = user.name;
+      document.getElementById('settings-photo').value = user.profilePhoto || '';
+      document.getElementById('settings-bio').value = user.bio || '';
+      
+      document.getElementById('settings-lastseen').value = user.settings?.lastSeenVisibility || 'ALL';
+      document.getElementById('settings-deftimer').value = user.settings?.messageTimerDefault || '300';
+      document.getElementById('settings-receipts').checked = user.settings?.readReceipts !== false;
+
+      // safety number
+      const sn = document.getElementById('settings-safety-number');
+      if (myPublicKeyJwk) {
+        let hash = 0;
+        for (let i = 0; i < myPublicKeyJwk.length; i++) hash = (hash << 5) - hash + myPublicKeyJwk.charCodeAt(i);
+        const abs = Math.abs(hash | 0).toString().padStart(15, '0');
+        sn.textContent = `${abs.slice(0, 3)}-${abs.slice(3, 6)}-${abs.slice(6, 9)}-${abs.slice(9, 12)}-${abs.slice(12, 15)}`;
+      }
+
+      document.getElementById('settings-modal').classList.remove('hidden');
+      lucide.createIcons();
+    };
+
+    const closeSettingsModal = () => {
+      document.getElementById('settings-modal').classList.add('hidden');
+    };
+
+    const handleSaveSettings = async (e) => {
+      e.preventDefault();
+      const payloadProfile = {
+        name: document.getElementById('settings-name').value,
+        profilePhoto: document.getElementById('settings-photo').value || null,
+        bio: document.getElementById('settings-bio').value || null
+      };
+      const payloadSettings = {
+        lastSeenVisibility: document.getElementById('settings-lastseen').value,
+        messageTimerDefault: parseInt(document.getElementById('settings-deftimer').value),
+        readReceipts: document.getElementById('settings-receipts').checked
+      };
+
+      try {
+        await fetch('/api/users/profile', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify(payloadProfile)
+        });
+        await fetch('/api/users/settings', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify(payloadSettings)
+        });
+        alert('Settings saved!');
+        closeSettingsModal();
+        loadSidebarData();
+      } catch (err) {
+        alert('Failed to save settings.');
+      }
+    };
+
+    const openGroupModal = () => {
+      const list = document.getElementById('group-members-list');
+      list.innerHTML = '';
+      if (friendsData.friends.length === 0) {
+        list.innerHTML = '<p class="text-[10px] text-slate-500 py-2">Add friends first!</p>';
+      } else {
+        friendsData.friends.forEach(f => {
+          list.innerHTML += `
+            <label class="flex items-center justify-between p-2 hover:bg-slate-900 cursor-pointer">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <img src="${f.friend.profilePhoto || `https://api.dicebear.com/7.x/bottts/svg?seed=${f.friend.username}`}" class="w-6 h-6 rounded-md object-cover bg-slate-800">
+                <div class="truncate text-left">
+                  <p class="text-xs font-semibold truncate text-slate-200">${f.friend.name}</p>
+                  <p class="text-[9px] text-slate-500 truncate">@${f.friend.username}</p>
+                </div>
+              </div>
+              <input type="checkbox" name="group-members" value="${f.friend.id}" class="w-3.5 h-3.5 text-violet-600 focus:ring-violet-500 bg-slate-900 border-slate-800 rounded cursor-pointer">
+            </label>
+          `;
+        });
+      }
+      document.getElementById('group-modal').classList.remove('hidden');
+    };
+
+    const closeGroupModal = () => {
+      document.getElementById('group-modal').classList.add('hidden');
+    };
+
+    const handleCreateGroup = async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('group-name').value;
+      const description = document.getElementById('group-desc').value;
+      const checkboxes = document.getElementsByName('group-members');
+      const memberIds = [];
+      checkboxes.forEach(c => {
+        if (c.checked) memberIds.push(c.value);
+      });
+
+      try {
+        const res = await fetch('/groups', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ name, description, memberIds })
+        });
+        if (res.ok) {
+          alert('Group created successfully!');
+          closeGroupModal();
+          loadSidebarData();
+        } else {
+          const d = await res.json();
+          alert(d.error);
+        }
+      } catch (err) {
+        alert('Failed to create group.');
+      }
+    };
+
+
+    // ================= MODERATOR PORTAL ACTIONS =================
+    // Load admin reports
+    const loadAdminDashboard = async () => {
+      try {
+        const statsRes = await fetch('/api/admin/stats', { headers: authHeaders() });
+        const stats = await statsRes.json();
+        
+        document.getElementById('admin-stat-users').textContent = stats.usersCount;
+        document.getElementById('admin-stat-online').textContent = stats.onlineUsersCount;
+        document.getElementById('admin-stat-groups').textContent = stats.groupsCount;
+        document.getElementById('admin-stat-reports').textContent = stats.reportsCount;
+
+        const reportsRes = await fetch('/api/admin/reports', { headers: authHeaders() });
+        const reports = await reportsRes.json();
+
+        const tableBody = document.getElementById('admin-reports-table-body');
+        tableBody.innerHTML = '';
+        
+        if (reports.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">No reports.</td></tr>';
+        } else {
+          reports.forEach(r => {
+            const isSuspended = r.reported.isSuspended;
+            const actionText = isSuspended ? 'Unsuspend' : 'Suspend';
+            const actionClass = isSuspended ? 'bg-emerald-950/40 border-emerald-800/40 text-emerald-400' : 'bg-red-950/40 border-red-800/40 text-red-400';
+            
+            tableBody.innerHTML += `
+              <tr class="hover:bg-slate-900/20">
+                <td class="p-3 font-semibold text-slate-200">${r.reporter.name}<p class="text-[9px] text-slate-500">@${r.reporter.username}</p></td>
+                <td class="p-3">
+                  <div class="flex items-center gap-1.5">
+                    <div>
+                      <p class="font-semibold text-slate-200">${r.reported.name}</p>
+                      <p class="text-[9px] text-slate-500">@${r.reported.username}</p>
+                    </div>
+                    ${isSuspended ? '<span class="text-[8px] bg-red-950/40 border border-red-800 text-red-400 font-bold px-1 rounded uppercase">Suspended</span>' : ''}
+                  </div>
+                </td>
+                <td class="p-3 text-slate-350 max-w-xs truncate" title="${r.reason}">${r.reason}</td>
+                <td class="p-3">
+                  ${r.evidence ? `<pre class="p-2 bg-slate-950 rounded-lg text-[9px] font-mono text-slate-400 max-w-xs max-h-16 overflow-y-auto whitespace-pre-wrap">${r.evidence}</pre>` : '<span class="text-[9px] text-slate-600 italic">No transcript evidence</span>'}
+                </td>
+                <td class="p-3 text-right">
+                  <button onclick="handleToggleSuspend('${r.reportedId}', ${isSuspended})" class="px-2 py-1 border rounded-lg text-[9px] font-bold uppercase transition-all cursor-pointer ${actionClass}">${actionText}</button>
+                </td>
+              </tr>
+            `;
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load admin stats:', err);
+      }
+    };
+
+    const handleToggleSuspend = async (userId, currentSuspended) => {
+      try {
+        const res = await fetch(`/api/admin/users/${userId}/suspend`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ suspend: !currentSuspended })
+        });
+        if (res.ok) {
+          alert(`Account ${!currentSuspended ? 'suspended' : 'restored'} successfully.`);
+          loadAdminDashboard();
+        } else {
+          const d = await res.json();
+          alert(d.error);
+        }
+      } catch (e) {
+        alert('Action failed.');
+      }
+    };
+
+    // Override screen router logic
+    const oldShowScreen = showScreen;
+    showScreen = (screen) => {
+      oldShowScreen(screen);
+      if (screen === 'admin') {
+        loadAdminDashboard();
+      } else if (screen === 'chat') {
+        loadSidebarData();
+      };
+    };
+
+    // Toggle password visibility on Login Page
+    const toggleLoginPassword = () => {
+      const pwdInput = document.getElementById('login-password');
+      const eyeIcon = document.getElementById('login-eye-icon');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>

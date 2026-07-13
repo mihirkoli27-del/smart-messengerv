@@ -1,0 +1,119 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum FriendStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+enum LastSeenVisibility {
+  ALL
+  FRIENDS
+  NONE
+}
+
+enum OnlineStatusVisibility {
+  ALL
+  FRIENDS
+  NONE
+}
+
+enum AllowMessagesFrom {
+  ALL
+  FRIENDS_ONLY
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  username     String        @unique
+  email        String        @unique
+  passwordHash String
+  profilePhoto String?
+  bio          String?
+  createdAt    DateTime      @default(now())
+  isSuspended  Boolean       @default(false)
+  publicKey    String?       // RSA Public Key for E2EE (JWK format)
+  
+  // Relations
+  sentRequests     Friend[]      @relation("SentRequests")
+  receivedRequests Friend[]      @relation("ReceivedRequests")
+  groupMemberships GroupMember[]
+  settings         UserSettings?
+  reportsFiled     Report[]      @relation("Reporter")
+  reportsReceived  Report[]      @relation("Reported")
+}
+
+model UserSettings {
+  userId                 String                 @id
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastSeenVisibility     LastSeenVisibility     @default(ALL)
+  onlineStatusVisibility OnlineStatusVisibility @default(ALL)
+  readReceipts           Boolean                @default(true)
+  messageTimerDefault    Int                    @default(300) // Default 5 minutes (in seconds)
+  allowMessagesFrom      AllowMessagesFrom      @default(ALL)
+  lastSeen               DateTime               @default(now())
+}
+
+model Friend {
+  id         String       @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     FriendStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+}
+
+model Group {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  groupImage  String?
+  createdBy   String
+  createdAt   DateTime      @default(now())
+  
+  members     GroupMember[]
+}
+
+model GroupMember {
+  id       String    @id @default(uuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  reporterId  String
+  reportedId  String
+  reason      String
+  evidence    String?  // Decrypted messages provided by reporter (if applicable)
+  status      String   @default("PENDING") // PENDING, RESOLVED, DISMISSED
+  createdAt   DateTime @default(now())
+
+  reporter User @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported User @relation("Reported", fields: [reportedId], references: [id], onDelete: Cascade)
+}

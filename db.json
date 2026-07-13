@@ -1,0 +1,26 @@
+{
+  "users": [
+    {
+      "id": "bc2e3a3d-7461-44ec-adb3-c34e6684ae6d",
+      "name": "mihir",
+      "username": "mihir",
+      "email": "mihirkoli27@gmail.com",
+      "passwordHash": "2bc2a08ef3a7006963ee1c5ba0596be01a30f82ff4582769686b5fae84c4523f",
+      "profilePhoto": null,
+      "bio": null,
+      "publicKey": null,
+      "isSuspended": false,
+      "isAdmin": true
+    }
+  ],
+  "friends": [],
+  "groups": [],
+  "settings": {
+    "bc2e3a3d-7461-44ec-adb3-c34e6684ae6d": {
+      "lastSeenVisibility": "ALL",
+      "messageTimerDefault": 300,
+      "readReceipts": true
+    }
+  },
+  "reports": []
+}
