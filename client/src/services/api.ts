@@ -11,20 +11,20 @@ const api = axios.create({
 
 // Attach the JWT access token to every outgoing request if it exists
 api.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error: any) => Promise.reject(error)
 );
 
 // Intercept responses to handle 401/403 errors by attempting to rotate tokens
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: any) => response,
+  async (error: any) => {
     const originalRequest = error.config;
     
     // Check for Unauthorized or Forbidden access token expiration

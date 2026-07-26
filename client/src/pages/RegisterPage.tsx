@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-serif'; // Wait, standard React Router Link/Navigate is from react-router-dom, let's fix it
-import { useNavigate as useNav } from 'react-router-dom';
+import { Link, useNavigate as useNav } from 'react-router-dom';
 import { User, Mail, Lock, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {

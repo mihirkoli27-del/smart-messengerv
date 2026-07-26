@@ -58,9 +58,10 @@ export const importPrivateKey = async (jwkString: string): Promise<CryptoKey> =>
   );
 };
 
-// Helper: Convert ArrayBuffer to Base64 String
-export const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-  const bytes = new Uint8Array(buffer);
+export const arrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
+  const bytes = buffer instanceof ArrayBuffer
+    ? new Uint8Array(buffer)
+    : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
   let binary = '';
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
