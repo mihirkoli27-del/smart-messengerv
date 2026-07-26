@@ -47,7 +47,7 @@ export const ChatArea: React.FC = () => {
   }, [messages.length, user?.id]);
 
   // Typing debounce timer
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<any>(null);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
     
