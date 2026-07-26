@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
-import { Send, Paperclip, Clock, Sparkles, Languages, AlertTriangle, FileText, ChevronDown, CheckCheck, Loader2, X } from 'lucide-react';
+import { Send, Paperclip, Clock, Sparkles, Languages, AlertTriangle, FileText, ChevronDown, CheckCheck, Loader2, X, ArrowLeft } from 'lucide-react';
 
 export const ChatArea: React.FC = () => {
   const { user } = useAuth();
@@ -9,7 +9,7 @@ export const ChatArea: React.FC = () => {
     activeRoomId, activeRoomType, activeRoomData, messages,
     typingUsers, aiSuggestions, aiSummary, aiSummaryLoading,
     sendMessage, requestChatSummary, translateTextMessage,
-    requestSmartReplies, setTypingStatus
+    requestSmartReplies, setTypingStatus, setActiveRoom
   } = useChat();
 
   const [inputText, setInputText] = useState('');
@@ -125,9 +125,17 @@ export const ChatArea: React.FC = () => {
     <div className="flex-1 h-full bg-slate-950 flex flex-col relative">
       {/* Header */}
       <div className="p-4 border-b border-slate-900 bg-slate-950 flex items-center justify-between z-10">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-sm text-slate-100">{roomName}</h3>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActiveRoom(null, null, null)}
+            className="md:hidden p-1.5 hover:bg-slate-900 rounded-lg text-slate-400 hover:text-slate-200 transition-all cursor-pointer flex items-center justify-center"
+            title="Back to Chats"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-sm text-slate-100">{roomName}</h3>
             {isE2EE && (
               <span className="text-[10px] px-1.5 py-0.5 bg-violet-950/40 border border-violet-800/40 text-violet-400 font-bold rounded-full flex items-center gap-1">
                 E2EE Secure
@@ -140,8 +148,8 @@ export const ChatArea: React.FC = () => {
             ) : (
               roomUsername
             )}
-          </p>
         </div>
+      </div>
 
         <div className="flex items-center gap-2">
           {messages.length > 0 && (

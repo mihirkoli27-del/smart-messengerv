@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
+import api from '../services/api';
 import { MessageSquare, Users, UserPlus, Settings, LogOut, Search, Check, X, Shield, Plus, HeartPulse } from 'lucide-react';
 
 interface SidebarProps {
@@ -54,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings, onOpenCreateGr
   };
 
   return (
-    <div className="w-80 h-full border-r border-slate-900 bg-slate-950 flex flex-col text-slate-200">
+    <div className="w-full h-full border-r border-slate-900 bg-slate-950 flex flex-col text-slate-200">
       {/* Profile Header */}
       <div className="p-4 border-b border-slate-900 flex items-center justify-between">
         <div className="flex items-center gap-3">
